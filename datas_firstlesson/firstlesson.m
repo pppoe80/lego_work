@@ -26,6 +26,16 @@ for n = 1:8
     w_approx = k*U-k*U*exp(-t/Tm);
     plot(t,w_approx,'r');
 
+    simOut = sim("call_model.slx");
+    figure('name','sim_from_w');
+    hold on;
+    grid on;
+    grid minor;
+    xlabel('time,sec');
+    ylabel('angle or speed,red is speed');
+    plot(simOut.yout{1}.Values);
+    plot(simOut.yout{2}.Values,'r');
+
     therta_function = @(P,t) P(1)*U*t+P(1)*P(2)*U*exp(-t/P(2));
 
     P_guess = [1,0.5];
@@ -48,12 +58,13 @@ for n = 1:8
 
     
     simOut = sim("call_model.slx");
-    figure('name','sim');
+    figure('name','sim_from_th');
     hold on;
     grid on;
     grid minor;
     xlabel('time,sec');
-    ylabel('angle or speed');
-    plot(simOut.get('yout'));
+    ylabel('angle or speed,red is speed');
+    plot(simOut.yout{1}.Values);
+    plot(simOut.yout{2}.Values,'r');
 
 end

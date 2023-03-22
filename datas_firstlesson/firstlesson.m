@@ -43,9 +43,9 @@ for n = 1:8
     plot(simOut.yout{2}.Values,'r');
     print('sim_w_from_w and sim_th_from_w'+string(n),'-djpeg');
 
-    therta_function = @(P,t) P(1)*U*t+P(1)*P(2)*U*exp(-t/P(2));
+    therta_function = @(P,t) P(1)*U*t+P(1)*P(2)*U*exp(-t/P(2))-P(1)*P(2)*U;
 
-    P_guess = [1,0.5];
+    P_guess = [1,1];
     P_approx = lsqcurvefit(therta_function,P_guess,t,therta);
     k = P_approx(1);
     Tm = P_approx(2);
@@ -60,7 +60,7 @@ for n = 1:8
     grid on;
     hold on;
     grid minor;
-    therta_approx = k*U*t+k*Tm*U*exp(-t/Tm);
+    therta_approx = k*U*t+k*Tm*U*exp(-t/Tm)-k*U*Tm;
     plot(t,therta_approx,'r');
     print('real_th and approx_th'+string(n),'-djpeg');
 

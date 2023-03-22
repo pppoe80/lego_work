@@ -1,3 +1,5 @@
+global k_from_w Tm_from_w;
+global k_from_th Tm_from_th;
 for n = 1:8
     data = readmatrix("data"+n+".txt");
     U = data(1,1);
@@ -14,6 +16,9 @@ for n = 1:8
     P_approx = lsqcurvefit(w_function,P_guess,t,w);
     k = P_approx(1);
     Tm = P_approx(2);
+
+    k_from_w(n) = k;
+    Tm_from_w(n) = Tm;
     
     figure('name','real_w and approx_w');
     plot(t,w,'Marker','+');
@@ -45,6 +50,9 @@ for n = 1:8
     k = P_approx(1);
     Tm = P_approx(2);
 
+    k_from_th(n) = k;
+    Tm_from_th(n) = Tm;
+
     figure('name','real_th and approx_th');
     plot(t,therta,'Marker','+');
     xlabel('time,sec');
@@ -70,6 +78,14 @@ for n = 1:8
     plot(simOut.yout{1}.Values);
     plot(simOut.yout{2}.Values,'r');
     print('sim_w_from_th and sim_th_from_th'+string(n),'-djpeg');
+
     
     close all;
 end
+
+writelines("k_from_w    Tm_from_w   k_from_th   Tm_from_th  ","k_Tm_Data_out.txt");
+writematrix([k_from_w.',Tm_from_w.',k_from_th.',Tm_from_th.'],'k_Tm_Data_out',WriteMode='append');
+
+
+
+

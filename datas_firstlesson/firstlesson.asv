@@ -17,6 +17,7 @@ for n = 1:8
     
     figure('name','real_w and approx_w');
     plot(t,w,'Marker','+');
+    print('real_w and approx_w'+ito ,'-djpeg');
     xlabel('time,sec');
     ylabel('speed,rad/sec');
     grid on;
@@ -25,7 +26,6 @@ for n = 1:8
     
     w_approx = k*U-k*U*exp(-t/Tm);
     plot(t,w_approx,'r');
-    print('real_w and approx_w'+string(n),'-djpeg');
 
     simOut = sim("call_model.slx");
     figure('name','sim_from_w');
@@ -36,7 +36,6 @@ for n = 1:8
     ylabel('angle or speed,red is speed');
     plot(simOut.yout{1}.Values);
     plot(simOut.yout{2}.Values,'r');
-    print('sim_w_from_w and sim_th_from_w'+string(n),'-djpeg');
 
     therta_function = @(P,t) P(1)*U*t+P(1)*P(2)*U*exp(-t/P(2));
 
@@ -54,7 +53,6 @@ for n = 1:8
     grid minor;
     therta_approx = k*U*t+k*Tm*U*exp(-t/Tm);
     plot(t,therta_approx,'r');
-    print('real_th and approx_th'+string(n),'-djpeg');
 
     open_system("call_model.slx");
     load_system("call_model.slx");
@@ -69,7 +67,6 @@ for n = 1:8
     ylabel('angle or speed,red is speed');
     plot(simOut.yout{1}.Values);
     plot(simOut.yout{2}.Values,'r');
-    print('sim_w_from_th and sim_th_from_th'+string(n),'-djpeg');
-    
-    close all;
+
+
 end

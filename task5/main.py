@@ -20,14 +20,14 @@ dc_r = Motor(Port.D)
 ultraSS_l = UltrasonicSensor(Port.S1)
 ultraSS_r = UltrasonicSensor(Port.S4)
 i = 0
-kList = [(0.3,0.3),(0.15,2)]
+kList = [(0.3,0.3),(1,20)]
 UMAX = 7
 desired_pList = [(20,0),(100,100)]
 modeList = ["st",""]
 R = 2.7
 B = 17
-Kp = 3
-dmin = 10
+Kp = 0.01
+dmin = 20
 MT = 1000
 
 def Controller_St(dist=0.0,kin=0)->float:
@@ -36,15 +36,11 @@ def Controller_St(dist=0.0,kin=0)->float:
         rvalue = UMAX*rvalue/abs(rvalue)
     return -rvalue/UMAX*100
 
-def Controller_Linear(i,x,y,angle,dist,Wheel = 'L'):
-    rvalue = desired_pList[i][0]*disterr(x,y,i)
-    avalue = desired_pList[i][1]*anglerr(x,y,i,angle,dist)
-    if(Wheel == 'L'):
-        avalue = -avalue
-    rvalue = rvalue+avalue
+def Controller_Linear(i,x,y,angle,dist,Wheelk = -20):
+    rvalue = (Wheelk*cos(anglerr(x,y,i,angle,dist))*sin(anglerr(x,y,i,angle,dist))+anglerr(x,y,i,angle,dist))*1+(disterr(x,y,i)*cos(anglerr(x,y,i,angle,dist))*1)*1
     if(abs(rvalue)>UMAX):
         rvalue = UMAX*rvalue/abs(rvalue)
-    return -rvalue/UMAX*100
+    return rvalue/UMAX*100
 
 def disterr(x,y,i):
     return sqrt(((desired_pList[i][0]-x))*(desired_pList[i][0]-x)+(desired_pList[i][1]-y)*(desired_pList[i][1]-y))
@@ -92,12 +88,14 @@ def Process(
             y += (L_Present - L)*sin(ta)
             L = L_Present
             ta = angle(latemp,ratemp)
-            dc_l.dc(Controller_Linear(i,x,y,angle(latemp,ratemp),dist,'L'))
-            dc_r.dc(Controller_Linear(i,x,y,angle(latemp,ratemp),dist,''))
+            dc_l.dc(Controller_Linear(i,x,y,ta,dist))
+            dc_r.dc(Controller_Linear(i,x,y,ta,dist,20))
             time_p = sw.time()
             data.log(x,   y,  dist,   ta, kList[i], time_p, latemp, ratemp, L_Present)
     dc_l.dc(0)
     dc_r.dc(0)
+    dc_l.reset_angle(0)
+    dc_r.reset_angle(0)
     ev3.speaker.say("Be Ready For Rest,20s to Prepare!")
     wait(3000)
 

@@ -20,15 +20,15 @@ dc_r = Motor(Port.D)
 ultraSS_l = UltrasonicSensor(Port.S1)
 ultraSS_r = UltrasonicSensor(Port.S4)
 i = 0
-kList = [(0.3,0.3),(0.1,20)]
+kList = [(0.3,0.3),(0.15,2)]
 UMAX = 7
 desired_pList = [(20,0),(100,100)]
 modeList = ["st",""]
 R = 2.7
 B = 17
-Kp = 10
+Kp = 3
 dmin = 10
-MT = 6000
+MT = 1000
 
 def Controller_St(dist=0.0,kin=0)->float:
     rvalue = (desired_pList[0][0]-dist)*kList[kin][0]

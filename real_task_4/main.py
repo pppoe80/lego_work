@@ -19,8 +19,8 @@ y = 0
 L = 0
 R = 2.7
 B = 17
-k1= 20
-k2= 1
+k1= 1
+k2= 20
 MAX_TIME = 15
 time_present = 0
 Tg = (-50,-50)
@@ -62,7 +62,7 @@ def Vfunc(misa=0.0,misd=0.0,ks=0.0,kr=0.0,mode="linear",range_u=7):
 
 ev3.speaker.say("Running start!")
 sw = StopWatch()
-data = DataLog(append=True,name="BiggerK1NlData--")
+data = DataLog(append=True,name="BiggerK2NlData--")
 data.log("x,y,L,t",k1,k2)
 
 while True:

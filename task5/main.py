@@ -22,11 +22,11 @@ ultraSS_r = UltrasonicSensor(Port.S4)
 i = 0
 kList = [(0.3,0.3),(1,20)]
 UMAX = 7
-desired_pList = [(20,0),(100,100)]
+desired_pList = [(20,0),(500,200)]
 modeList = ["st",""]
 R = 2.7
 B = 17
-Kp = 0.01
+Kp = 3
 dmin = 20
 MT = 1000
 
@@ -34,19 +34,30 @@ def Controller_St(dist=0.0,kin=0)->float:
     rvalue = (desired_pList[0][0]-dist)*kList[kin][0]
     if(abs(rvalue)>UMAX):
         rvalue = UMAX*rvalue/abs(rvalue)
-    return -rvalue/UMAX*100
+    return rvalue/UMAX*50
 
-def Controller_Linear(i,x,y,angle,dist,Wheelk = -20):
-    rvalue = (Wheelk*cos(anglerr(x,y,i,angle,dist))*sin(anglerr(x,y,i,angle,dist))+anglerr(x,y,i,angle,dist))*1+(disterr(x,y,i)*cos(anglerr(x,y,i,angle,dist))*1)*1
+def Controller_Linear(i,x,y,angle,Wheelk = -20):
+    rvalue = (cos(anglerr(x,y,i,angle))*sin(anglerr(x,y,i,angle))+anglerr(x,y,i,angle))*Wheelk + (disterr(x,y,i)*cos(anglerr(x,y,i,angle))*1)*1
     if(abs(rvalue)>UMAX):
         rvalue = UMAX*rvalue/abs(rvalue)
-    return rvalue/UMAX*100
+    return rvalue/UMAX*50
+
+def reallyController_Linear(i,x,y,angle,Wheelk=-2):
+    rvalue = anglerr(x,y,i,angle)*Wheelk+disterr(x,y,i)
+    if(abs(rvalue)>UMAX):
+        rvalue = UMAX*rvalue/abs(rvalue)
+    return rvalue/UMAX*50
 
 def disterr(x,y,i):
     return sqrt(((desired_pList[i][0]-x))*(desired_pList[i][0]-x)+(desired_pList[i][1]-y)*(desired_pList[i][1]-y))
 
-def anglerr(x,y,i,angle,dist):
-    return atan2(desired_pList[i][1]-y,desired_pList[i][0]-x) - angle + Kp*(dmin - dist)
+def anglerr(x,y,i,angle):
+    disconsider = 0
+    if dmin > ultraSS_r.distance():
+        disconsider = max(abs(dmin-ultraSS_r.distance())/10*Kp,0.7)
+    if dmin > ultraSS_l.distance():
+        disconsider = max(abs(dmin-ultraSS_l.distance())/10*Kp,0.7)
+    return atan2(desired_pList[i][1]-y,desired_pList[i][0]-x) - angle + disconsider
 
 def angle(langle,rangle):
     return (rangle-langle)*R/B
@@ -73,10 +84,10 @@ def Process(
     L_Present = 0
     sw = StopWatch()
     while Finish(modeList[i],time_p,x,y,i):
-        dist = sqrt(ultraSS_l.distance()*ultraSS_r.distance())/10
+        dist = (ultraSS_l.distance()+ultraSS_r.distance())/10/2
         if(modeList[i] == "st"):
-            dc_r.dc(Controller_St(dist = dist,kin=i))
-            dc_l.dc(Controller_St(dist = dist,kin=i))
+            dc_r.dc(Controller_St(kin=i))
+            dc_l.dc(Controller_St(kin=i))
             time = time_p
             time_p = sw.time()
             data.log("None",    "None", dist,   "None", kList[i][0],    time,   "None", "None")
@@ -88,8 +99,8 @@ def Process(
             y += (L_Present - L)*sin(ta)
             L = L_Present
             ta = angle(latemp,ratemp)
-            dc_l.dc(Controller_Linear(i,x,y,ta,dist))
-            dc_r.dc(Controller_Linear(i,x,y,ta,dist,20))
+            dc_l.dc(reallyController_Linear(i,x,y,ta))
+            dc_r.dc(reallyController_Linear(i,x,y,ta,Wheelk = 2))
             time_p = sw.time()
             data.log(x,   y,  dist,   ta, kList[i], time_p, latemp, ratemp, L_Present)
     dc_l.dc(0)
